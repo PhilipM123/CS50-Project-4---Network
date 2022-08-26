@@ -1,0 +1,71 @@
+{% extends "network/layout.html" %}
+
+<head>
+
+</head>
+
+{% block body %}
+
+<h1>{{target}}</h1>
+<h6>Followers: {{followers}}</h6>
+<h6>Following: {{following}}</h6>
+
+{% if user.is_authenticated %}
+    {% if not target == user %}
+        {% if followbtn %}
+        <div>
+            <form action="{% url 'follow' target.id %}">
+                <button>Follow</button>
+            </form>
+        </div>
+        {%elif not followbtn%}
+        <div>
+            <form action="{% url 'unfollow' target.id %}">
+                <button>Un-Follow</button>
+            </form>
+        </div>
+{%endif%}
+{%endif%}
+{%endif%}
+
+{% for post in page_obj %}
+<div class="post">
+    <h4><a href="{% url 'profile' post.user.id %}">{{post.user}}</a></h4>
+    <p class="content">{{post.content}}</p>
+    <p>{{post.timestamp}}</p>
+    <p class="likes">Likes: {{post.likers.count}}</p>
+    {% if user.is_authenticated %}
+        <div class="like_div">
+            {% csrf_token %}
+            <input type="hidden" name="postlikers" value="{{post.likers.all}}">
+            <input type="hidden" name="userid" value="{{request.user}}"/>
+            <input type="hidden" name="id" value="{{post.id}}" />
+            <button class="like_btn" id="like">Like Post</button>
+        </div>
+        {% if request.user == post.user %}
+            <div>
+                <button class="edit_btn">Edit Post</button>
+                <form class="edit_post" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{post.id}}" />
+                    <textarea class="edit-content" maxlength="200" maxheight="100" name="content"  placeholder="Edit Post.."></textarea>
+                    <input class="edit-submit" type="submit" class="btn btn-light ml-3" style="transform: translateY(-10px);" />
+                </form>
+            </div>
+        {%endif%}
+    {%endif%}
+</div>
+{%endfor%}
+
+<nav class="paginator">
+    <ul class="pagination">
+        {% if page_obj.has_next %}
+            <li class="page_item"><a href="?page={{ page_obj.next_page_number }}">next</a></li>
+        {%endif%}
+        {% if page_obj.has_previous %}
+            <li class="page_item"><a href="?page=1">&laquo; first     </a></li> 
+            <li class="page_item"><a href="?page={{ page_obj.previous_page_number }}">previous</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{%endblock%}
